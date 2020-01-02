@@ -5,10 +5,13 @@ CFLAGS += -g
 
 LIBS += -lm -std=c++11
 
-all: iasim
+all: ia iasim
+
+ia: ia.cpp
+	$(CPP) $^ -o $@ $(LIBS) $(CFLAGS)
 
 iasim: iasim.cpp
 	$(CPP) $^ -o $@ $(LIBS) $(CFLAGS)
 
 clean:
-	rm -f iasim
+	rm -f iasim ia

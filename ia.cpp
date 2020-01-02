@@ -26,9 +26,11 @@ int tipoErro;
 double mediaErroGPS;
 double desvErroGPS;
 int algorithm;
+//enum algorithm{exaustivo, gpsimples, gpsrefinado, proposta_ref, proposta_iter} algorithm;
 int cen;
 int trace;
 int Tmove;
+int nAdjacentes;
 
 float lambda = 0.010714; //28GHz
 
@@ -109,6 +111,7 @@ void read_params(int argc, char *argv[ ])
 	fastIA = atoi(argv[26]); 
 	limiarFastIA = atof(argv[27]);
 	condCanal = atoi(argv[28]);
+	nAdjacentes = atoi(argv[29]);
 }
 
 //################################################################################################################
@@ -559,6 +562,8 @@ int main(int argc, char *argv[ ])
 	int contador=0;
 	int contadortot=0;
 	float adjacente=-(360/(M_BS+N_BS));
+	float tamFeixe=360/(M_BS+N_BS); // tamanho do feixe de acordo com o nro de elementos da UPA
+	int modificador=-nAdjacentes; // usado nos algoritmos
 	int alg=1;
 	int contalg=0;
 	float afmax=0;
@@ -938,15 +943,25 @@ int main(int argc, char *argv[ ])
 			
 				
 		
+				/* OLD VERSION
 				}else if(algorithm == 2){ //GPS Refinado
 
 					if (contIA != 0){restoIA = contIA % ((M_UE+N_UE)*3);}
 
 					printf("restoIA %d\n ",restoIA);
 				
+					// terminou IA
 					if(restoIA==0) { beamUSR=0; beamBS=0;  adjacente=-(360/(M_BS+N_BS)); nIA++;}
+
+					// terminou com falha
 					if((SNRmax<=pow(10.0,SNRmin/10))&&(restoIA==0)&&(teste==0)&&(Tout>1000)){Tout=0; update=1; teste=1; continue;}
-					if((SNRmax>=pow(10.0,SNRmin/10))&&(restoIA==0)){verificaIA=0; USRbeam=BeamUSRdados; BSbeam=BeamBSdados; restoIA=1; contIA=0; tempoIA=0; tempoDADOS=1; beamUSR=0; beamBS=0; SNR=SNRmax; adjacente=-(360/(M_BS+N_BS)); continue; }else{
+
+					// terminou IA com sucesso
+					if((SNRmax>=pow(10.0,SNRmin/10))&&(restoIA==0)){
+
+						verificaIA=0; USRbeam=BeamUSRdados; BSbeam=BeamBSdados; restoIA=1; contIA=0; tempoIA=0; tempoDADOS=1; beamUSR=0; beamBS=0; SNR=SNRmax; adjacente=-(360/(M_BS+N_BS)); continue; 
+
+					} else {
 		
 						USRbeam=fi_UE[beamUSR];
 						BSbeam = (fiBS+adjacente);
@@ -965,9 +980,49 @@ int main(int argc, char *argv[ ])
 						printf("contIA %d\n ",contIA);
 					}
 			
+				*/
+		
+				}else if(algorithm == 2){ //GPS Refinado
+
+					if (contIA != 0){restoIA = contIA % ((M_UE+N_UE)*(2*nAdjacentes + 1));}
+
+					printf("restoIA %d\n ",restoIA);
+				
+					// terminou IA
+					if(restoIA==0) { beamUSR=0; beamBS=0; modificador=-nAdjacentes; nIA++;}
+
+					// terminou com falha
+					if((SNRmax<=pow(10.0,SNRmin/10))&&(restoIA==0)&&(teste==0)&&(Tout>1000)){Tout=0; update=1; teste=1; continue;}
+
+					// terminou IA com sucesso
+					if((SNRmax>=pow(10.0,SNRmin/10))&&(restoIA==0)){
+
+						verificaIA=0; USRbeam=BeamUSRdados; BSbeam=BeamBSdados; restoIA=1; contIA=0; tempoIA=0; tempoDADOS=1; beamUSR=0; beamBS=0; SNR=SNRmax; continue; 
+
+					// não terminou
+					} else {
+		
+						USRbeam=fi_UE[beamUSR];
+						BSbeam = fiBS + modificador*tamFeixe;
+						printf("adjacente %f\n ",adjacente);
+						if(beamUSR<(M_UE+N_UE-1)){
+			
+							beamUSR=beamUSR+1;
+		
+						}else{
+							modificador++;
+							beamUSR=0;
+						}
+		
+						contIA++;
+						teste=0;
+						printf("contIA %d\n ",contIA);
+					}
+			
 				
 		
-				}else if(algorithm == 3){ //Proposta adjacente
+				/* OLD
+				}else if(algorithm == 3){ //Proposta iterativo
 			
 
 					if (contIA != 0){restoIA = contIA % ((M_UE+N_UE)*mult);}
@@ -1030,8 +1085,76 @@ int main(int argc, char *argv[ ])
 						teste=0;
 						printf("contIA %d\n ",contIA);
 					}
+				*/
 
-				}else if(algorithm == 4){ //Proposta iterativo
+
+				}else if(algorithm == 3){ //Proposta iterativo
+			
+
+					if (contIA != 0){restoIA = contIA % ((M_UE+N_UE)*(2*nAdjacentes + 1 + 2));} // Fase 1:(2*nAdjacentes + 1) +  Fase 2:2
+
+					printf("restoIA %d\n ",restoIA);
+					
+					if(restoIA==0) { beamUSR=0; beamBS=0; modificador=-nAdjacentes; alg=1; nIA++;}
+
+					if((SNRmax<=pow(10.0,SNRmin/10))&&(restoIA==0)&&(teste==0)&&(Tout>1000)){Tout=0; update=1; teste=1; continue;}
+					
+					if((SNRmax>=pow(10.0,SNRmin/10))&&(restoIA==0)){verificaIA=0; USRbeam=BeamUSRdados; BSbeam=BeamBSdados; restoIA=1; contIA=0; tempoIA=0; tempoDADOS=1; beamUSR=0; beamBS=0; SNR=SNRmax; alg=1; continue; }else{
+		
+						if(alg==1){printf("parte1111111\n ");
+							USRbeam=fi_UE[beamUSR];
+							BSbeam = (fiBS+(adjacente*2));
+							printf("adjacente %f\n ",adjacente*2);
+							if(beamUSR<(M_UE+N_UE-1)){
+			
+								beamUSR=beamUSR+1;
+		
+							}else{
+								adjacente=(adjacente+(360/(M_BS+N_BS)));
+								beamUSR=0;
+							}
+							contalg++;
+							if(contalg==((M_UE+N_UE)*3)){
+								contalg=0; alg=0; adjacente=-(360/(M_BS+N_BS)); max=SNRmax;
+								if(SNRmax>=pow(10.0,SNRmin/10)){fiBS=BeamBSdados; mult=5;}else{mult=7;}
+							}
+
+						}else{printf("parte2222222222\n ");
+					
+							if(max>=pow(10.0,SNRmin/10)){
+								USRbeam=fi_UE[beamUSR];
+								BSbeam = (fiBS+(adjacente));
+								printf("adjacente %f\n ",adjacente);
+								if(beamUSR<(M_UE+N_UE-1)){
+			
+									beamUSR=beamUSR+1;
+		
+								}else{
+									adjacente=(adjacente+(720/(M_BS+N_BS)));
+									beamUSR=0;
+								}
+							}else{
+
+								USRbeam=fi_UE[beamUSR];
+								BSbeam = (fiBS+(adjacente*3));
+								printf("adjacente %f\n ",adjacente);
+								if(beamUSR<(M_UE+N_UE-1)){
+			
+									beamUSR=beamUSR+1;
+		
+								}else{
+									adjacente=(adjacente+((720/3)/(M_BS+N_BS)));
+									beamUSR=0;
+								}
+							}
+				
+						}
+						contIA++;
+						teste=0;
+						printf("contIA %d\n ",contIA);
+					}
+
+				}else if(algorithm == 4){ //Proposta refinado
 
 
 					if (contIA != 0){restoIA = contIA % ((M_UE+N_UE)*7);}

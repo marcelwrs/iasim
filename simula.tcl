@@ -19,18 +19,24 @@ set Tcanal              1
 set tipoErro		1  ;# 0-Uniforme | 1-Distribui��o normal
 set desvErroGPS		10
 set log			0
-set stop		120000  ;# tempo de simulacao
+set stop		1500  ;# tempo de simulacao
 set move		75000
 set fastIA		0	
 set velocityOBJ	        10
 set limFastIA		0
+set nAdj		1
 
-set val_condCanal       {1 2} ;# 1-LOS | 2-NLOS | 3-AUTO
-set val_velocityUSR     {1 3 5 7 9}
+#set val_condCanal       {1 2} ;# 1-LOS | 2-NLOS | 3-AUTO
+set val_condCanal       {3} ;# 1-LOS | 2-NLOS | 3-AUTO
+set val_velocityUSR     {0}
+#set val_velocityUSR     {1 3 5 7 9}
 set val_mediaErroGPS	{5 10}
-set val_algorithm	{0 1 2 3 4}  ;# 0-Exaustivo | 1-GPS | 2-GPS refinado | 3-Proposta intercalado | 4-Proposta iterativo
-set val_protocolo       {{2 0.5}}  ;#  0-Não refaz IA | 1-Intervalo fixo | 2-Limiar de SNR | 3- Good
-set val_distMax		{25 100}
+#set val_algorithm	{0 1 2 3 4}  ;# 0-Exaustivo | 1-GPS | 2-GPS refinado | 3-Proposta intercalado | 4-Proposta iterativo
+set val_algorithm	{2}  ;# 0-Exaustivo | 1-GPS | 2-GPS refinado | 3-Proposta intercalado | 4-Proposta iterativo
+set val_nAdj		{1 2 3}
+#set val_protocolo       {{2 0.5}}  ;#  0-Não refaz IA | 1-Intervalo fixo | 2-Limiar de SNR | 3- Good
+set val_protocolo       {{1 1500}}  ;#  0-Não refaz IA | 1-Intervalo fixo | 2-Limiar de SNR | 3- Good
+set val_distMax		{100}
 
 # Scrip de simula��o
 switch [lindex $argv 0] {
@@ -71,9 +77,13 @@ switch [lindex $argv 0] {
 								foreach distMax $val_distMax {
 
 									for {set run 1} {$run <= $cenario} {incr run} {
-
-										puts "./ia $Pt $distMax $npontos $run $dir/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div [expr ($distMax*750)/$velocityUSR] $minSNR $Tper $Tcanal [expr $stop*(20/$velocityUSR)] $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal"
-										exec qsub -o /dev/null -e /dev/null -V -cwd -b y -shell n ./ia $Pt $distMax $npontos $run $dir/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div [expr ($distMax*750)/$velocityUSR] $minSNR $Tper $Tcanal [expr $stop*(20/$velocityUSR)] $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal
+										if {$velocityUSR > 0.0} {
+											set tmove [expr ($distMax*750)/$velocityUSR]
+										} else {
+											set tmove 0.0
+										}
+										puts "./ia $Pt $distMax $npontos $run $dir/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div $tmove $minSNR $Tper $Tcanal $stop $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal"
+										exec qsub -o /dev/null -e /dev/null -V -cwd -b y -shell n ./ia $Pt $distMax $npontos $run $dir/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div $tmove $minSNR $Tper $Tcanal $stop $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal
 
 									}
 								}
@@ -100,27 +110,36 @@ switch [lindex $argv 0] {
 		exec mkdir $dir
 
 		foreach alg $val_algorithm {
+		
+			foreach nAdj $val_nAdj {
 
-			foreach condCanal $val_condCanal {
+				foreach condCanal $val_condCanal {
 
-				foreach mediaErroGPS $val_mediaErroGPS {
+					foreach mediaErroGPS $val_mediaErroGPS {
 
-					foreach velocityUSR $val_velocityUSR {
+						foreach velocityUSR $val_velocityUSR {
 
-						foreach protocolo $val_protocolo {
+							foreach protocolo $val_protocolo {
 
-							set protoID [lindex $protocolo 0]
-							set protocolo [lreplace $protocolo 0 0]
+								set protoID [lindex $protocolo 0]
+								set protocolo [lreplace $protocolo 0 0]
 
-							foreach protoParam $protocolo {
+								foreach protoParam $protocolo {
 
-								foreach distMax $val_distMax {
+									foreach distMax $val_distMax {
 
-									for {set run 1} {$run <= $cenario} {incr run} {
+										for {set run 1} {$run <= $cenario} {incr run} {
 
-										puts "./ia $Pt $distMax $npontos $run $dir/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div [expr ($distMax*750)/$velocityUSR] $minSNR $Tper $Tcanal [expr $stop*(20/$velocityUSR)] $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal"
-										exec ./ia $Pt $distMax $npontos $run $dir/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div [expr ($distMax*750)/$velocityUSR] $minSNR $Tper $Tcanal [expr $stop*(20/$velocityUSR)] $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal
+											if {$velocityUSR > 0.0} {
+												set tmove [expr ($distMax*750)/$velocityUSR]
+											} else {
+												set tmove 0.0
+											}
 
+											puts "./ia $Pt $distMax $npontos $run $dir/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div $tmove $minSNR $Tper $Tcanal $stop $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal $nAdj"
+											exec ./ia $Pt $distMax $npontos $run $dir/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div $tmove $minSNR $Tper $Tcanal $stop $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal $nAdj
+
+										}
 									}
 								}
 							}
@@ -152,9 +171,9 @@ switch [lindex $argv 0] {
 
 									for {set run 1} {$run <= $cenario} {incr run} {
 							
-										puts "cat results/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run >> results/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax"
+										puts "cat results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run >> results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax"
 											
-										exec cat results/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run >> results/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 
+										exec cat results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run >> results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 
 							
 									}					
 
@@ -185,8 +204,8 @@ switch [lindex $argv 0] {
 								foreach distMax $val_distMax {
 
 							
-									puts "./ci.m results/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax results/out-alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 13 $ic"
-									exec ./ci.m results/alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax results/out-alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 13 $ic
+									puts "./ci.m results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax results/out-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 13 $ic"
+									exec ./ci.m results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax results/out-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 13 $ic
 								
 								}
 							}						
