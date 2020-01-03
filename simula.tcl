@@ -32,7 +32,7 @@ set val_velocityUSR     {0}
 #set val_velocityUSR     {1 3 5 7 9}
 set val_mediaErroGPS	{5 10}
 #set val_algorithm	{0 1 2 3 4}  ;# 0-Exaustivo | 1-GPS | 2-GPS refinado | 3-Proposta intercalado | 4-Proposta iterativo
-set val_algorithm	{2}  ;# 0-Exaustivo | 1-GPS | 2-GPS refinado | 3-Proposta intercalado | 4-Proposta iterativo
+set val_algorithm	{2 3}  ;# 0-Exaustivo | 1-GPS | 2-GPS refinado | 3-Proposta intercalado | 4-Proposta iterativo
 set val_nAdj		{1 2 3}
 #set val_protocolo       {{2 0.5}}  ;#  0-Não refaz IA | 1-Intervalo fixo | 2-Limiar de SNR | 3- Good
 set val_protocolo       {{1 1500}}  ;#  0-Não refaz IA | 1-Intervalo fixo | 2-Limiar de SNR | 3- Good
@@ -138,8 +138,12 @@ switch [lindex $argv 0] {
 
 											puts "./ia $Pt $distMax $npontos $run $dir/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div $tmove $minSNR $Tper $Tcanal $stop $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal $nAdj"
 											exec ./ia $Pt $distMax $npontos $run $dir/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div $tmove $minSNR $Tper $Tcanal $stop $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal $nAdj
+											exec cat results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run >> results/agg.alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 
 
 										}
+										exec ./ci.m results/agg.alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax results/out-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 13 $ic
+										exec cat results/out-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax >> results/out.dist-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR
+
 									}
 								}
 							}
@@ -149,6 +153,26 @@ switch [lindex $argv 0] {
 			}
 		}
 	}
+
+	"PLOTLOCAL" {
+
+		foreach mediaErroGPS $val_mediaErroGPS {
+
+			# Capaciodade Efetiva
+			exec sed "s/<output>/dist-Cef-nAdj_$nAdj.mediaErroGPS_$mediaErroGPS.eps/" plot-base.gnu | sed "s/<xlabel>/Distância (m)/" | sed "s/<ylabel>/Capacidade Efetiva (Gbps)/" | sed "s/<xmax>/*/" | sed "s/<ymax>/*/" > plot.gnu
+			exec echo "set key top left" >> plot.gnu
+			exec echo "plot \\" >> plot.gnu
+			exec echo "\"results/out.dist-alg_2.nadj_1.condCanal_3.protoID_1.protoParam_1500.mediaErroGPS_$mediaErroGPS.velocityUSR_0\" u 1:18:19 w errorlines t \"GPS Refinado 1\", \\" >> plot.gnu
+			exec echo "\"results/out.dist-alg_2.nadj_2.condCanal_3.protoID_1.protoParam_1500.mediaErroGPS_$mediaErroGPS.velocityUSR_0\" u 1:18:19 w errorlines t \"GPS Refinado 2\", \\" >> plot.gnu
+			exec echo "\"results/out.dist-alg_2.nadj_3.condCanal_3.protoID_1.protoParam_1500.mediaErroGPS_$mediaErroGPS.velocityUSR_0\" u 1:18:19 w errorlines t \"GPS Refinado 3\", \\" >> plot.gnu
+			exec echo "\"results/out.dist-alg_3.nadj_1.condCanal_3.protoID_1.protoParam_1500.mediaErroGPS_$mediaErroGPS.velocityUSR_0\" u 1:18:19 w errorlines t \"Intercalado 1\", \\" >> plot.gnu
+			exec echo "\"results/out.dist-alg_3.nadj_2.condCanal_3.protoID_1.protoParam_1500.mediaErroGPS_$mediaErroGPS.velocityUSR_0\" u 1:18:19 w errorlines t \"Intercalado 2\", \\" >> plot.gnu
+			exec echo "\"results/out.dist-alg_3.nadj_3.condCanal_3.protoID_1.protoParam_1500.mediaErroGPS_$mediaErroGPS.velocityUSR_0\" u 1:18:19 w errorlines t \"Intercalado 3\", \\" >> plot.gnu
+			exec gnuplot plot.gnu
+
+		}
+	}
+
 
 	"CAT" {
 

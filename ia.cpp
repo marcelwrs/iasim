@@ -562,7 +562,13 @@ int main(int argc, char *argv[ ])
 	int contadortot=0;
 	float adjacente=-(360/(M_BS+N_BS));
 	float tamFeixe=360/(M_BS+N_BS); // tamanho do feixe de acordo com o nro de elementos da UPA
-	int modificador=-nAdjacentes; // usado nos algoritmos
+
+	int modificador; // usado nos algoritmos
+	if (algorithm == 2) // case GPS refinado
+		modificador=-nAdjacentes; // usado nos algoritmos
+	else if (algorithm == 3) // case proposta refinado
+		modificador=-2*nAdjacentes; // usado nos algoritmos
+
 	int fase=1;
 	int alg=1;
 	int contfase=0;
@@ -1093,85 +1099,68 @@ int main(int argc, char *argv[ ])
 				}else if(algorithm == 3){ //Proposta refinado
 			
 
-					if (contIA != 0){restoIA = contIA % ((M_UE+N_UE)*(2*nAdjacentes + 1 + 2));} // Fase 1: (2*nAdjacentes + 1) feixes
+					// fim da 1a fase
+					if((fase == 1) && (contfase == ((M_UE+N_UE)*(2*nAdjacentes + 1)))){
+						contfase=0; 
 
-					//	if (fase == 1) // Fase 1: (2*nAdjacentes + 1) feixes
-					//	else // 2a fase: 2 feixes
-					//		restoIA = contIA % ((M_UE+N_UE)*2;
-					//}
+						if(SNRmax>=pow(10.0,SNRmin/10)){ // sucesso na 1a fase
+							fase=2; max=SNRmax;
+							fiBS=BeamBSdados; modificador=-1;
+						} else { // falha na 1a fase
+							modificador = -2*nAdjacentes;
+							// muitos slots sem sucesso
+							if((teste==0)&&(Tout>1000)){
+								beamUSR=0; beamBS=0; modificador=-2*nAdjacentes; fase=1; nIA++;
+								Tout=0; update=1; teste=1; 
+								continue;
+							}
+						}
+					// fim da 2a fase
+					} else if ((fase == 2) && (contfase == ((M_UE+N_UE)*2))) {
 
-					printf("restoIA %d\n ",restoIA);
-					
-					// terminou IA
-					if(restoIA==0) { beamUSR=0; beamBS=0; modificador=-2*nAdjacentes; fase=1; nIA++;}
-
-					// terminou com falha
-					if((SNRmax<=pow(10.0,SNRmin/10))&&(restoIA==0)&&(teste==0)&&(Tout>1000)){Tout=0; update=1; teste=1; continue;}
-					
-					// terminou com sucesso
-					if((SNRmax>=pow(10.0,SNRmin/10))&&(restoIA==0)){
+						// terminou IA
+						beamUSR=0; beamBS=0; modificador=-2*nAdjacentes; fase=1; nIA++;
 						verificaIA=0; USRbeam=BeamUSRdados; BSbeam=BeamBSdados; restoIA=1; contIA=0; 
 						tempoIA=0; tempoDADOS=1; beamUSR=0; beamBS=0; SNR=SNRmax; fase=1; 
 						continue; 
 					
-					// nao terminou
-					}else{
-						// 1a fase
-						if(fase==1){printf("parte1111111\n ");
-
-							USRbeam=fi_UE[beamUSR];
-							BSbeam = fiBS + modificador*tamFeixe;
-							printf("modificador %d\n ",modificador);
-							if(beamUSR<(M_UE+N_UE-1)){
-			
-								beamUSR=beamUSR+1;
-		
-							}else{
-								modificador = modificador + 2;
-								beamUSR=0;
-							}
-							contfase++;
-
-							// fim da 1a fase
-							if(contfase==((M_UE+N_UE)*(2*nAdjacentes + 1))){
-								contfase=0; fase=2; max=SNRmax;
-								if(SNRmax>=pow(10.0,SNRmin/10)){fiBS=BeamBSdados;} // mult=5;}else{mult=7;}
-							}
-
-						}else{printf("parte2222222222\n ");
-					
-							if(max>=pow(10.0,SNRmin/10)){
-								USRbeam=fi_UE[beamUSR];
-								BSbeam = (fiBS+(adjacente));
-								printf("adjacente %f\n ",adjacente);
-								if(beamUSR<(M_UE+N_UE-1)){
-			
-									beamUSR=beamUSR+1;
-		
-								}else{
-									adjacente=(adjacente+(720/(M_BS+N_BS)));
-									beamUSR=0;
-								}
-							}else{
-
-								USRbeam=fi_UE[beamUSR];
-								BSbeam = (fiBS+(adjacente*3));
-								printf("adjacente %f\n ",adjacente);
-								if(beamUSR<(M_UE+N_UE-1)){
-			
-									beamUSR=beamUSR+1;
-		
-								}else{
-									adjacente=(adjacente+((720/3)/(M_BS+N_BS)));
-									beamUSR=0;
-								}
-							}
-				
-						}
-						contIA++;
-						teste=0;
-						printf("contIA %d\n ",contIA);
 					}
+
+					// 1a fase
+					if(fase==1){printf("parte1111111\n ");
+
+						USRbeam=fi_UE[beamUSR];
+						BSbeam = fiBS + modificador*tamFeixe;
+						printf("modificador %d\n ",modificador);
+						if(beamUSR<(M_UE+N_UE-1)){
+		
+							beamUSR=beamUSR+1;
+	
+						}else{
+							modificador = modificador + 2;
+							beamUSR=0;
+						}
+
+					// 2a fase
+					}else{printf("parte2222222222\n ");
+				
+						USRbeam=fi_UE[beamUSR];
+						BSbeam = fiBS + modificador*tamFeixe;
+						printf("modificador %d\n ",modificador);
+						if(beamUSR<(M_UE+N_UE-1)){
+	
+							beamUSR=beamUSR+1;
+
+						}else{
+							modificador = 1;
+							beamUSR=0;
+						}
+			
+					}
+					contfase++;
+					contIA++;
+					teste=0;
+					printf("contIA %d\n ",contIA);
 
 				/* OLD
 				}else if(algorithm == 4){ //Proposta iterativo
