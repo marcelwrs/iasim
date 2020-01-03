@@ -36,7 +36,7 @@ set val_algorithm	{2}  ;# 0-Exaustivo | 1-GPS | 2-GPS refinado | 3-Proposta inte
 set val_nAdj		{1 2 3}
 #set val_protocolo       {{2 0.5}}  ;#  0-Não refaz IA | 1-Intervalo fixo | 2-Limiar de SNR | 3- Good
 set val_protocolo       {{1 1500}}  ;#  0-Não refaz IA | 1-Intervalo fixo | 2-Limiar de SNR | 3- Good
-set val_distMax		{100}
+set val_distMax		{10 20 30 40 50 100 150}
 
 # Scrip de simula��o
 switch [lindex $argv 0] {
@@ -154,29 +154,32 @@ switch [lindex $argv 0] {
 
 		foreach alg $val_algorithm {
 
-			foreach condCanal $val_condCanal {
+			foreach nAdj $val_nAdj {
 
-				foreach mediaErroGPS $val_mediaErroGPS {
+				foreach condCanal $val_condCanal {
 
-					foreach velocityUSR $val_velocityUSR {
+					foreach mediaErroGPS $val_mediaErroGPS {
 
-						foreach protocolo $val_protocolo {
+						foreach velocityUSR $val_velocityUSR {
 
-							set protoID [lindex $protocolo 0]
-							set protocolo [lreplace $protocolo 0 0]
+							foreach protocolo $val_protocolo {
 
-							foreach protoParam $protocolo {
+								set protoID [lindex $protocolo 0]
+								set protocolo [lreplace $protocolo 0 0]
 
-								foreach distMax $val_distMax {
+								foreach protoParam $protocolo {
 
-									for {set run 1} {$run <= $cenario} {incr run} {
-							
-										puts "cat results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run >> results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax"
-											
-										exec cat results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run >> results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 
-							
-									}					
+									foreach distMax $val_distMax {
 
+										for {set run 1} {$run <= $cenario} {incr run} {
+								
+											puts "cat results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run >> results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax"
+												
+											exec cat results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run >> results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 
+								
+										}					
+
+									}
 								}
 							}
 						}
@@ -188,27 +191,30 @@ switch [lindex $argv 0] {
 
 		foreach alg $val_algorithm {
 
-			foreach condCanal $val_condCanal {
+			foreach nAdj $val_nAdj {
 
-				foreach mediaErroGPS $val_mediaErroGPS {
+				foreach condCanal $val_condCanal {
 
-					foreach velocityUSR $val_velocityUSR {
+					foreach mediaErroGPS $val_mediaErroGPS {
 
-						foreach protocolo $val_protocolo {
+						foreach velocityUSR $val_velocityUSR {
 
-							set protoID [lindex $protocolo 0]
-							set protocolo [lreplace $protocolo 0 0]
+							foreach protocolo $val_protocolo {
 
-							foreach protoParam $protocolo {
+								set protoID [lindex $protocolo 0]
+								set protocolo [lreplace $protocolo 0 0]
 
-								foreach distMax $val_distMax {
+								foreach protoParam $protocolo {
 
-							
-									puts "./ci.m results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax results/out-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 13 $ic"
-									exec ./ci.m results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax results/out-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 13 $ic
+									foreach distMax $val_distMax {
+
 								
-								}
-							}						
+										puts "./ci.m results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax results/out-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 13 $ic"
+										exec ./ci.m results/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax results/out-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax 13 $ic
+									
+									}
+								}						
+							}
 						}
 					}
 				}
@@ -218,25 +224,28 @@ switch [lindex $argv 0] {
 
 		foreach alg $val_algorithm {
 
-			foreach condCanal $val_condCanal {
+			foreach nAdj $val_nAdj {
 
-				foreach mediaErroGPS $val_mediaErroGPS {
+				foreach condCanal $val_condCanal {
 
-					foreach velocityUSR $val_velocityUSR {
+					foreach mediaErroGPS $val_mediaErroGPS {
 
-						foreach protocolo $val_protocolo {
+						foreach velocityUSR $val_velocityUSR {
 
-							set protoID [lindex $protocolo 0]
-							set protocolo [lreplace $protocolo 0 0]
+							foreach protocolo $val_protocolo {
 
-							foreach protoParam $protocolo {
+								set protoID [lindex $protocolo 0]
+								set protocolo [lreplace $protocolo 0 0]
 
-								foreach distMax $val_distMax {
-					
-									puts "cat results/out-alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax >> results/out.velocity-alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.dist_$distMax"
+								foreach protoParam $protocolo {
+
+									foreach distMax $val_distMax {
+						
+										puts "cat results/out-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax >> results/out.dist-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR"
+										
+										exec cat results/out-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax >> results/out.dist-alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR
 									
-									exec cat results/out-alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax >> results/out.velocity-alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.dist_$distMax
-								
+									}
 								}
 							}
 						}
@@ -248,25 +257,28 @@ switch [lindex $argv 0] {
 
 		foreach alg $val_algorithm {
 
-			foreach condCanal $val_condCanal {
+			foreach nAdj $val_nAdj {
 
-				foreach mediaErroGPS $val_mediaErroGPS {
+				foreach condCanal $val_condCanal {
 
-					foreach velocityUSR $val_velocityUSR {
+					foreach mediaErroGPS $val_mediaErroGPS {
 
-						foreach protocolo $val_protocolo {
+						foreach velocityUSR $val_velocityUSR {
 
-							set protoID [lindex $protocolo 0]
-							set protocolo [lreplace $protocolo 0 0]
+							foreach protocolo $val_protocolo {
 
-							foreach protoParam $protocolo {
+								set protoID [lindex $protocolo 0]
+								set protocolo [lreplace $protocolo 0 0]
 
-								foreach distMax $val_distMax {
-					
-									puts "cat results/out-alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax >> results/out.protoParam-alg_$alg.condCanal_$condCanal.protoID_$protoID.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax"
+								foreach protoParam $protocolo {
+
+									foreach distMax $val_distMax {
+						
+#										puts "cat results/out-alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax >> results/out.protoParam-alg_$alg.condCanal_$condCanal.protoID_$protoID.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax"
+										
+#										exec cat results/out-alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax >> results/out.protoParam-alg_$alg.condCanal_$condCanal.protoID_$protoID.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax
 									
-									exec cat results/out-alg_$alg.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax >> results/out.protoParam-alg_$alg.condCanal_$condCanal.protoID_$protoID.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax
-								
+									}
 								}
 							}
 						}
