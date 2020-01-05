@@ -1,6 +1,7 @@
-set term post eps color enhanced 16
+set term pdf
+#set term post eps color enhanced 16
 set encoding utf8
-set size 0.7,0.7
+#set size 0.7,0.7
 
 set output "<output>"
 
