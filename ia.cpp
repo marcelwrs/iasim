@@ -1307,14 +1307,28 @@ int main(int argc, char *argv[ ])
 	//printf("contador %d\n ",contador);
 	printf("totalCap %f\n ",totalCap);
 
-
-	float avgcapacidade=(totalCap/contDADOS);
-	float avgcapacidadeEf=(totalCap/Tsimulacao);
-	float avgZERO=(float)ZERO/(float)contDADOS;
-	float avgBEAM=(float)certo/(float)contDADOS;
-	float avgBEAMZERO=(float)certoZERO/(float)ZERO;
-
-	if(contIA>=limite){avgcapacidade=0;}
+	float avgcapacidade;
+	float avgcapacidadeEf;
+	float avgZERO;
+	float avgBEAM;
+	if (contDADOS > 0) {
+		avgcapacidade=(totalCap/contDADOS);
+		avgcapacidadeEf=(totalCap/Tsimulacao);
+		avgZERO=(float)ZERO/(float)contDADOS;
+		avgBEAM=(float)certo/(float)contDADOS;
+	} else {
+		avgcapacidade=0.0;
+		avgcapacidadeEf=0.0;
+		avgZERO=0.0;
+		avgBEAM=0.0;
+	}
+	float avgBEAMZERO;
+	if (ZERO > 0)
+		avgBEAMZERO=(float)certoZERO/(float)ZERO;
+	else
+		avgBEAMZERO=0.0;
+	
+	//if(contIA>=limite){avgcapacidade=0; }
 	printf("avgcapacidade %f\n ",avgcapacidade);
 	plot_results(algorithm, protocolo, decaimentoTaxaRx, velocity_USR, mediaErroGPS, avgcapacidade, avgcapacidadeEf, contadorIA, nIA, totalSNR, avgZERO, avgBEAM, avgBEAMZERO);
 	

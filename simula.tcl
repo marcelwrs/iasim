@@ -5,7 +5,7 @@ set ic			95		;# Intervalo de confian�a
 
 # Parametros da simula��o
 set distMax		100
-set cenario             100
+set cenario             200
 set npontos		50   ;# deprecated
 set dir			results
 set div			4		;# Fator que divide o lambda do espa�amento das antenas
@@ -82,9 +82,11 @@ switch [lindex $argv 0] {
 
 									foreach distMax $val_distMax {
 
+										puts "alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax"
+
 										for {set run 1} {$run <= $cenario} {incr run} {
 
-											puts "qsub -o /dev/null -e /dev/null -V -cwd -b y -shell n ./ia $Pt $distMax $npontos $run $dir/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div $tmove $minSNR $Tper $Tcanal $stop $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal $nAdj"
+											#puts "qsub -o /dev/null -e /dev/null -V -cwd -b y -shell n ./ia $Pt $distMax $npontos $run $dir/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div $tmove $minSNR $Tper $Tcanal $stop $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal $nAdj"
 											exec qsub -o /dev/null -e /dev/null -V -cwd -b y -shell n ./ia $Pt $distMax $npontos $run $dir/alg_$alg.nadj_$nAdj.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR.dist_$distMax.run_$run $NF $TN $BW $div $tmove $minSNR $Tper $Tcanal $stop $tipoErro $mediaErroGPS [expr (9.0*$mediaErroGPS)-30.0] $alg $log $velocityUSR $velocityOBJ $protoID $protoParam $protoParam $protoParam $fastIA $limFastIA $condCanal $nAdj
 										}
 									}
@@ -221,14 +223,14 @@ switch [lindex $argv 0] {
 									#foreach distMax $val_distMax {
 
 			# Capaciodade Efetiva
-			exec sed "s/<output>/dist-Cef-alg_$alg.tframe_$protoParam.mediaErroGPS_$mediaErroGPS.pdf/" plot-base.gnu | sed "s/<xlabel>/Distância (m)/" | sed "s/<ylabel>/Capacidade Efetiva (Gbps)/" | sed "s/<xmax>/*/" | sed "s/<ymax>/*/" > plot.gnu
+			exec sed "s/<output>/dist-Cef-alg_$alg.tframe_$protoParam.mediaErroGPS_$mediaErroGPS.pdf/" plot-base.gnu | sed "s/<xlabel>/Distância (m)/" | sed "s/<ylabel>/Capacidade Efetiva (Gbps)/" | sed "s/<xmax>/*/" | sed "s/<ymax>/18/" > plot.gnu
 			exec echo "set key top right" >> plot.gnu
 			exec echo "plot \\" >> plot.gnu
-			exec echo "\"results/out.dist-alg_$alg.nadj_1.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR\" u 1:18:19 w errorlines t \"alg=$alg 1\", \\" >> plot.gnu
-			exec echo "\"results/out.dist-alg_$alg.nadj_2.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR\" u 1:18:19 w errorlines t \"alg=$alg 2\", \\" >> plot.gnu
-			exec echo "\"results/out.dist-alg_$alg.nadj_3.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR\" u 1:18:19 w errorlines t \"alg=$alg 3\", \\" >> plot.gnu
-			exec echo "\"results/out.dist-alg_$alg.nadj_4.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR\" u 1:18:19 w errorlines t \"alg=$alg 4\", \\" >> plot.gnu
-			exec echo "\"results/out.dist-alg_$alg.nadj_5.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR\" u 1:18:19 w errorlines t \"alg=$alg 5\"" >> plot.gnu
+			exec echo "\"results/out.dist-alg_$alg.nadj_1.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR\" u 1:20:21 w errorlines t \"alg=$alg 1\", \\" >> plot.gnu
+			exec echo "\"results/out.dist-alg_$alg.nadj_2.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR\" u 1:20:21 w errorlines t \"alg=$alg 2\", \\" >> plot.gnu
+			exec echo "\"results/out.dist-alg_$alg.nadj_3.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR\" u 1:20:21 w errorlines t \"alg=$alg 3\", \\" >> plot.gnu
+			exec echo "\"results/out.dist-alg_$alg.nadj_4.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR\" u 1:20:21 w errorlines t \"alg=$alg 4\", \\" >> plot.gnu
+			exec echo "\"results/out.dist-alg_$alg.nadj_5.condCanal_$condCanal.protoID_$protoID.protoParam_$protoParam.mediaErroGPS_$mediaErroGPS.velocityUSR_$velocityUSR\" u 1:20:21 w errorlines t \"alg=$alg 5\"" >> plot.gnu
 			exec gnuplot plot.gnu
 
 									#}
